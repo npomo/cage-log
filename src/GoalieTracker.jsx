@@ -158,8 +158,6 @@ export default function GoalieTracker() {
     });
   }, []);
 
-  const active = games.find((g) => g.id === activeId) || null;
-
   const startGame = () => {
     const g = emptyGame(undefined, activePlayerId);
     commit((prev) => [g, ...prev]);
