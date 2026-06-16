@@ -127,6 +127,8 @@ export default function GoalieTracker() {
   const [activePlayerId, setActivePlayerId] = useState(null);
   const [editingPlayerId, setEditingPlayerId] = useState(null);
   const [playerNameDraft, setPlayerNameDraft] = useState("");
+  const [addingPlayer, setAddingPlayer] = useState(false);
+  const [newPlayerDraft, setNewPlayerDraft] = useState("");
 
   const didLoad = React.useRef(false);
   const lpTimer = React.useRef(null);
@@ -313,17 +315,20 @@ export default function GoalieTracker() {
     setEditDest(null);
   };
 
-  const addPlayer = () => {
-    const p = { id: `p_${Date.now()}`, name: `Player ${players.length + 1}` };
-    commitPlayers((prev) => [...prev, p]);
-    setEditingPlayerId(p.id);
-    setPlayerNameDraft(p.name);
-  };
-
   const savePlayerName = (id) => {
     const clean = playerNameDraft.trim();
     if (clean) commitPlayers((prev) => prev.map((p) => p.id === id ? { ...p, name: clean } : p));
     setEditingPlayerId(null);
+  };
+
+  const confirmAddPlayer = () => {
+    const clean = newPlayerDraft.trim();
+    setAddingPlayer(false);
+    setNewPlayerDraft("");
+    if (!clean) return;
+    const p = { id: `p_${Date.now()}`, name: clean };
+    commitPlayers((prev) => [...prev, p]);
+    switchPlayer(p.id);
   };
 
   const playerGames = games.filter((g) => g.playerId === activePlayerId);
@@ -364,15 +369,57 @@ export default function GoalieTracker() {
           </nav>
         </div>
         <div className="player-bar">
-          {players.map((p) => (
-            <button
-              key={p.id}
-              className={`player-chip${activePlayerId === p.id ? " on" : ""}`}
-              onClick={() => switchPlayer(p.id)}
-            >
-              {p.name}
-            </button>
-          ))}
+          {addingPlayer ? (
+            <input
+              className="name-input"
+              autoFocus
+              placeholder="Player name"
+              value={newPlayerDraft}
+              onChange={(e) => setNewPlayerDraft(e.target.value)}
+              onBlur={confirmAddPlayer}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") confirmAddPlayer();
+                if (e.key === "Escape") { setAddingPlayer(false); setNewPlayerDraft(""); }
+              }}
+            />
+          ) : editingPlayerId === activePlayerId && activePlayerId ? (
+            <input
+              className="name-input"
+              autoFocus
+              value={playerNameDraft}
+              onChange={(e) => setPlayerNameDraft(e.target.value)}
+              onBlur={() => savePlayerName(activePlayerId)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") savePlayerName(activePlayerId);
+                if (e.key === "Escape") setEditingPlayerId(null);
+              }}
+            />
+          ) : (
+            <>
+              <select
+                className="player-select"
+                value={activePlayerId || ""}
+                onChange={(e) => {
+                  if (e.target.value === "__add__") setAddingPlayer(true);
+                  else switchPlayer(e.target.value);
+                }}
+              >
+                {players.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+                <option value="__add__">+ Add Player…</option>
+              </select>
+              {activePlayerId && (
+                <button
+                  className="player-edit-btn"
+                  title="Rename player"
+                  onClick={() => { setPlayerNameDraft(players.find((p) => p.id === activePlayerId)?.name || ""); setEditingPlayerId(activePlayerId); }}
+                >
+                  ✎
+                </button>
+              )}
+            </>
+          )}
         </div>
       </header>
 
@@ -585,32 +632,6 @@ export default function GoalieTracker() {
               );
             })
           )}
-          <div className="players-section">
-            <div className="players-header">
-              <span className="players-title">Players</span>
-              <button className="ghost sm" onClick={addPlayer}>+ Add</button>
-            </div>
-            {players.map((p) => (
-              <div key={p.id} className="player-row">
-                {editingPlayerId === p.id ? (
-                  <input
-                    className="name-input"
-                    value={playerNameDraft}
-                    autoFocus
-                    onChange={(e) => setPlayerNameDraft(e.target.value)}
-                    onBlur={() => savePlayerName(p.id)}
-                    onKeyDown={(e) => { if (e.key === "Enter") savePlayerName(p.id); if (e.key === "Escape") setEditingPlayerId(null); }}
-                  />
-                ) : (
-                  <button className="gname-edit" onClick={() => { setPlayerNameDraft(p.name); setEditingPlayerId(p.id); }}>
-                    <span className="gname">{p.name}</span>
-                    <span className="pencil">✎</span>
-                  </button>
-                )}
-                <span className="player-gamecount">{games.filter((g) => g.playerId === p.id).length} game{games.filter((g) => g.playerId === p.id).length !== 1 ? "s" : ""}</span>
-              </div>
-            ))}
-          </div>
         </section>
       ) : view === "stats" ? (
         <StatsView games={playerGames} />
@@ -806,13 +827,9 @@ h1, h2 { margin: 0; }
 .top { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
 .top-row { display: flex; align-items: center; justify-content: space-between; }
 .player-bar { display: flex; gap: 6px; }
-.player-chip { background: #1a2220; border: 1px solid #2c3a36; color: #8a978f; font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 20px; cursor: pointer; }
-.player-chip.on { background: #c6ff4f; color: #0f1413; border-color: #c6ff4f; }
-.players-section { background: #161d1b; border: 1px solid #2c3a36; border-radius: 13px; padding: 13px 15px; margin-top: 4px; }
-.players-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; }
-.players-title { font-size: 13px; font-weight: 700; }
-.player-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-top: 1px solid #2c3a36; }
-.player-gamecount { font-size: 11px; color: #6f7c74; }
+.player-select { background: #1a2220; border: 1px solid #2c3a36; color: #c6ff4f; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 12px; cursor: pointer; outline: none; font-family: inherit; flex: 1; }
+.player-select:focus { border-color: #c6ff4f; }
+.player-edit-btn { background: #1a2220; border: 1px solid #2c3a36; color: #8a978f; font-size: 14px; padding: 8px 11px; border-radius: 10px; cursor: pointer; }
 .crest { display: flex; align-items: center; gap: 11px; }
 .crest-mark { font-size: 30px; color: #c6ff4f; line-height: 1; }
 .crest h1 { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
