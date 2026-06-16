@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Preferences } from "@capacitor/preferences";
 import goalieImg from "./assets/goalie.jpg";
+import { SEED_GAMES } from "./seedGames";
 
 // ---- Data model -------------------------------------------------------------
 // A game holds shots (each tied to a net zone + result) and clears (each tied
@@ -45,8 +47,8 @@ const DEFAULT_PLAYERS = [
 
 async function readKey(key) {
   try {
-    const res = await window.storage.get(key);
-    if (!res) return null;
+    const res = await Preferences.get({ key });
+    if (!res.value) return null;
     const parsed = JSON.parse(res.value);
     return Array.isArray(parsed) ? parsed : null;
   } catch {
@@ -60,23 +62,22 @@ async function loadGames() {
   // primary empty or missing — fall back to backup if it has more
   const backup = await readKey(BACKUP_KEY);
   if (backup && backup.length) return backup;
+  if (primary === null && backup === null) {
+    // neither key has ever been written — first launch, seed with prototype games
+    await saveGames(SEED_GAMES);
+    return SEED_GAMES;
+  }
   return primary || backup || [];
 }
 
 async function loadPlayers() {
-  try {
-    const res = await window.storage.get(PLAYERS_KEY);
-    if (!res) return null;
-    const parsed = JSON.parse(res.value);
-    return Array.isArray(parsed) && parsed.length ? parsed : null;
-  } catch {
-    return null;
-  }
+  const players = await readKey(PLAYERS_KEY);
+  return players && players.length ? players : null;
 }
 
 async function savePlayers(players) {
   try {
-    await window.storage.set(PLAYERS_KEY, JSON.stringify(players));
+    await Preferences.set({ key: PLAYERS_KEY, value: JSON.stringify(players) });
   } catch (e) {
     console.error("save players failed", e);
   }
@@ -86,8 +87,8 @@ async function saveGames(games) {
   const json = JSON.stringify(games);
   try {
     // back up the value we're about to commit, then write primary
-    await window.storage.set(BACKUP_KEY, json);
-    await window.storage.set(STORAGE_KEY, json);
+    await Preferences.set({ key: BACKUP_KEY, value: json });
+    await Preferences.set({ key: STORAGE_KEY, value: json });
   } catch (e) {
     console.error("save failed", e);
   }
