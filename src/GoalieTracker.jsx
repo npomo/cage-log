@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import goalieImg from "./assets/goalie.jpg";
 
 // ---- Data model -------------------------------------------------------------
 // A game holds shots (each tied to a net zone + result) and clears (each tied
@@ -308,7 +309,6 @@ export default function GoalieTracker() {
     setActivePlayerId(playerId);
     const firstGame = games.find((g) => g.playerId === playerId);
     setActiveId(firstGame?.id || null);
-    setView("track");
     setPendingZone(null);
     setPendingClear(null);
     setEditZone(null);
@@ -356,7 +356,9 @@ export default function GoalieTracker() {
       <header className="top">
         <div className="top-row">
           <div className="crest">
-            <span className="crest-mark">▟</span>
+            <span className="crest-mark" aria-hidden="true">
+              <img src={goalieImg} alt="" />
+            </span>
             <div>
               <h1>Cage Log</h1>
               <p className="sub">Goalie stat tracker</p>
@@ -831,7 +833,8 @@ h1, h2 { margin: 0; }
 .player-select:focus { border-color: #c6ff4f; }
 .player-edit-btn { background: #1a2220; border: 1px solid #2c3a36; color: #8a978f; font-size: 14px; padding: 8px 11px; border-radius: 10px; cursor: pointer; }
 .crest { display: flex; align-items: center; gap: 11px; }
-.crest-mark { font-size: 30px; color: #c6ff4f; line-height: 1; }
+.crest-mark { display: inline-flex; width: 34px; height: 34px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+.crest-mark img { width: 100%; height: 100%; object-fit: cover; }
 .crest h1 { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
 .sub { margin: 1px 0 0; font-size: 11px; color: #6f7c74; text-transform: uppercase; letter-spacing: 0.14em; }
 .tabs { display: flex; gap: 4px; background: #1a2220; padding: 3px; border-radius: 11px; }
