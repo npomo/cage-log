@@ -361,7 +361,6 @@ export default function GoalieTracker() {
             </span>
             <div>
               <h1>Cage Log</h1>
-              <p className="sub">Goalie stat tracker</p>
             </div>
           </div>
           <nav className="tabs">
@@ -836,7 +835,6 @@ h1, h2 { margin: 0; }
 .crest-mark { display: inline-flex; width: 34px; height: 34px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
 .crest-mark img { width: 100%; height: 100%; object-fit: cover; }
 .crest h1 { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
-.sub { margin: 1px 0 0; font-size: 11px; color: #6f7c74; text-transform: uppercase; letter-spacing: 0.14em; }
 .tabs { display: flex; gap: 4px; background: #1a2220; padding: 3px; border-radius: 11px; }
 .tab { border: 0; background: transparent; color: #8a978f; font-size: 13px; font-weight: 600; padding: 7px 13px; border-radius: 8px; cursor: pointer; }
 .tab.on { background: #2c3a36; color: #e8efe9; }
