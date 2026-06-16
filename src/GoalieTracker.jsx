@@ -40,6 +40,7 @@ const emptyGame = (name, playerId) => ({
 // primary, so a corrupt/empty primary can be recovered from the last good copy.
 const BACKUP_KEY = "goalie:games:v1:bak";
 const PLAYERS_KEY = "goalie:players:v1";
+const UI_STATE_KEY = "goalie:ui:v1";
 const DEFAULT_PLAYERS = [
   { id: "p_vincent", name: "Vincent" },
   { id: "p_tony",    name: "Tony" },
@@ -80,6 +81,25 @@ async function savePlayers(players) {
     await Preferences.set({ key: PLAYERS_KEY, value: JSON.stringify(players) });
   } catch (e) {
     console.error("save players failed", e);
+  }
+}
+
+async function loadUiState() {
+  try {
+    const res = await Preferences.get({ key: UI_STATE_KEY });
+    if (!res.value) return null;
+    const parsed = JSON.parse(res.value);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+async function saveUiState(state) {
+  try {
+    await Preferences.set({ key: UI_STATE_KEY, value: JSON.stringify(state) });
+  } catch (e) {
+    console.error("save ui state failed", e);
   }
 }
 
@@ -138,18 +158,37 @@ export default function GoalieTracker() {
   useEffect(() => {
     if (didLoad.current) return;
     didLoad.current = true;
-    Promise.all([loadGames(), loadPlayers()]).then(([g, p]) => {
+    Promise.all([loadGames(), loadPlayers(), loadUiState()]).then(([g, p, ui]) => {
       const resolvedPlayers = p || DEFAULT_PLAYERS;
       if (!p) savePlayers(resolvedPlayers);
       setPlayers(resolvedPlayers);
-      const firstPlayerId = resolvedPlayers[0]?.id || null;
-      setActivePlayerId(firstPlayerId);
       setGames(g);
-      const firstGame = g.find((game) => game.playerId === firstPlayerId);
+
+      const restoredPlayerId = ui && resolvedPlayers.some((pl) => pl.id === ui.activePlayerId)
+        ? ui.activePlayerId
+        : null;
+      const playerId = restoredPlayerId || resolvedPlayers[0]?.id || null;
+      setActivePlayerId(playerId);
+
+      const restoredGame = ui && g.find((game) => game.id === ui.activeId && game.playerId === playerId);
+      const firstGame = restoredGame || g.find((game) => game.playerId === playerId);
       if (firstGame) setActiveId(firstGame.id);
+
+      if (ui && (ui.view === "track" || ui.view === "history" || ui.view === "stats")) {
+        setView(ui.view);
+      }
+
       setLoaded(true);
     });
   }, []);
+
+  // Persist which tab/player/game was last active so a fresh page load (e.g.
+  // a mobile browser reloading a backgrounded tab) resumes where it left off
+  // instead of always defaulting to Track + the first player.
+  useEffect(() => {
+    if (!loaded) return;
+    saveUiState({ view, activePlayerId, activeId });
+  }, [loaded, view, activePlayerId, activeId]);
 
   // All writes go through here. The functional updater guarantees we mutate
   // the latest state, never a stale render closure — and we only persist the
