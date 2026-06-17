@@ -149,6 +149,7 @@ export default function GoalieTracker() {
   const [activePlayerId, setActivePlayerId] = useState(null);
   const [editingPlayerId, setEditingPlayerId] = useState(null);
   const [playerNameDraft, setPlayerNameDraft] = useState("");
+  const [confirmDeletePlayer, setConfirmDeletePlayer] = useState(false);
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [newPlayerDraft, setNewPlayerDraft] = useState("");
 
@@ -371,6 +372,17 @@ export default function GoalieTracker() {
     switchPlayer(p.id);
   };
 
+  const deletePlayer = (playerId) => {
+    const remainingPlayers = players.filter((p) => p.id !== playerId);
+    commitPlayers(() => remainingPlayers);
+    commit((prev) => prev.filter((g) => g.playerId !== playerId));
+    const nextPlayerId = remainingPlayers[0]?.id || null;
+    setActivePlayerId(nextPlayerId);
+    const nextGame = games.find((g) => g.playerId === nextPlayerId);
+    setActiveId(nextGame?.id || null);
+    setConfirmDeletePlayer(false);
+  };
+
   const playerGames = games.filter((g) => g.playerId === activePlayerId);
   const active = playerGames.find((g) => g.id === activeId) || null;
   const st = active ? gameStats(active) : null;
@@ -410,7 +422,17 @@ export default function GoalieTracker() {
           </nav>
         </div>
         <div className="player-bar">
-          {addingPlayer ? (
+          {confirmDeletePlayer ? (
+            <div className="player-delete-confirm">
+              <span className="confirm-q">
+                Delete {players.find((p) => p.id === activePlayerId)?.name} and{" "}
+                {games.filter((g) => g.playerId === activePlayerId).length} game
+                {games.filter((g) => g.playerId === activePlayerId).length !== 1 ? "s" : ""}?
+              </span>
+              <button className="danger sm" onClick={() => deletePlayer(activePlayerId)}>Yes, delete</button>
+              <button className="ghost sm" onClick={() => setConfirmDeletePlayer(false)}>Cancel</button>
+            </div>
+          ) : addingPlayer ? (
             <input
               className="name-input"
               autoFocus
@@ -457,6 +479,16 @@ export default function GoalieTracker() {
                   onClick={() => { setPlayerNameDraft(players.find((p) => p.id === activePlayerId)?.name || ""); setEditingPlayerId(activePlayerId); }}
                 >
                   ✎
+                </button>
+              )}
+              {activePlayerId && (
+                <button
+                  className="player-edit-btn"
+                  title={players.length <= 1 ? "Can't delete the only player" : "Delete player"}
+                  disabled={players.length <= 1}
+                  onClick={() => setConfirmDeletePlayer(true)}
+                >
+                  🗑
                 </button>
               )}
             </>
@@ -871,6 +903,8 @@ h1, h2 { margin: 0; }
 .player-select { background: #1a2220; border: 1px solid #2c3a36; color: #c6ff4f; font-size: 14px; font-weight: 700; padding: 8px 14px; border-radius: 12px; cursor: pointer; outline: none; font-family: inherit; flex: 1; }
 .player-select:focus { border-color: #c6ff4f; }
 .player-edit-btn { background: #1a2220; border: 1px solid #2c3a36; color: #8a978f; font-size: 14px; padding: 8px 11px; border-radius: 10px; cursor: pointer; }
+.player-edit-btn:disabled { opacity: 0.4; cursor: default; }
+.player-delete-confirm { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .crest { display: flex; align-items: center; gap: 11px; }
 .crest-mark { display: inline-flex; width: 34px; height: 34px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
 .crest-mark img { width: 100%; height: 100%; object-fit: cover; }
