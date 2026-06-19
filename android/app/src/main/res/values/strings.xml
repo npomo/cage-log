@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Cage Log</string>
+    <string name="title_activity_main">Cage Log</string>
+    <string name="package_name">com.npomo.cagelog</string>
+    <string name="custom_url_scheme">com.npomo.cagelog</string>
+</resources>

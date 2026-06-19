@@ -8,15 +8,18 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "playwright test"
+    "test": "playwright test",
+    "android": "npm run build && npx cap sync android && npx cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.0",
     "@capacitor/core": "^8.4.0",
     "@capacitor/preferences": "^8.0.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.4.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.0",
     "@types/react": "^19.2.14",
