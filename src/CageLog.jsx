@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Capacitor } from "@capacitor/core";
+import { App as CapApp } from "@capacitor/app";
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
 import goalieImg from "./assets/goalie.jpg";
@@ -70,6 +71,17 @@ export default function CageLog() {
     if (!loaded) return;
     saveUiState({ activePlayerId, activeId, theme, activeSport, sportTab });
   }, [loaded, activePlayerId, activeId, theme, activeSport, sportTab]);
+
+  // Android hardware/gesture back. Registered once; reads the latest handler
+  // through a ref so it always sees current nav state. Steps: track/stats →
+  // sport home (History) → sport grid → exit the app.
+  const backRef = React.useRef(() => {});
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return undefined;
+    let handle;
+    CapApp.addListener("backButton", () => backRef.current()).then((h) => { handle = h; });
+    return () => { if (handle) handle.remove(); };
+  }, []);
 
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
@@ -233,6 +245,19 @@ export default function CageLog() {
     setActiveSport(null);
     setEditingName(false);
   };
+
+  // Keep the back handler current with the latest nav state (updated in an
+  // effect rather than during render so it doesn't touch the ref mid-render).
+  useEffect(() => {
+    backRef.current = () => {
+      if (activeSport) {
+        if (sportTab !== "history") setSportTab("history");
+        else backToGrid();
+      } else {
+        CapApp.exitApp();
+      }
+    };
+  });
 
   const activePlayerName = players.find((p) => p.id === activePlayerId)?.name;
 

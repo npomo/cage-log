@@ -14,7 +14,7 @@ export const css = `
   --ok-bg: #15291d; --ok-border: #2f6b42; --ok-text: #7fe0a0;
   --chip-on-border: #4a6a38;
 
-  max-width: 480px; margin: 0 auto; min-height: 100vh;
+  width: 100%; max-width: 760px; margin: 0 auto; min-height: 100vh;
   background: var(--bg); color: var(--text);
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   padding: 16px 16px 40px;
