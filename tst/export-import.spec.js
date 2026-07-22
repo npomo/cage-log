@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { freshLoad, goTo, SEEDED_GAME_NAMES } from "./helpers.js";
+import { freshLacrosse, goTo, SEEDED_GAME_NAMES } from "./helpers.js";
 
 test("export downloads the current games as a JSON file", async ({ page }) => {
-  await freshLoad(page);
+  await freshLacrosse(page);
   await goTo(page, "History");
 
   const [download] = await Promise.all([
@@ -18,10 +18,11 @@ test("export downloads the current games as a JSON file", async ({ page }) => {
   expect(parsed.length).toBe(SEEDED_GAME_NAMES.length);
 });
 
-test("importing a new game upserts it into History", async ({ page }) => {
-  await freshLoad(page);
+test("importing a legacy game migrates and upserts it into History", async ({ page }) => {
+  await freshLacrosse(page);
   await goTo(page, "History");
 
+  // legacy (v1) shape — no sport/position; migration should wrap it as lacrosse/goalie
   const newGame = [{
     id: "g_imported_test",
     name: "Imported Test Game",
@@ -42,7 +43,7 @@ test("importing a new game upserts it into History", async ({ page }) => {
 });
 
 test("importing a malformed file shows an error", async ({ page }) => {
-  await freshLoad(page);
+  await freshLacrosse(page);
   await goTo(page, "History");
   await page.setInputFiles('input[type="file"]', {
     name: "backup.json",

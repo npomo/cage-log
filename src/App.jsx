@@ -1,7 +1,7 @@
-import GoalieTracker from './GoalieTracker'
+import CageLog from './CageLog'
 
 function App() {
-  return <GoalieTracker />
+  return <CageLog />
 }
 
 export default App

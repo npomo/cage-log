@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { freshLoad, goTo, switchPlayer, SEEDED_GAME_NAMES } from "./helpers.js";
+import { freshLoad, freshLacrosse, goTo, switchPlayer, SEEDED_GAME_NAMES } from "./helpers.js";
 
 test("dropdown lists Vincent and Tony, defaults to Vincent", async ({ page }) => {
   await freshLoad(page);
@@ -10,8 +10,8 @@ test("dropdown lists Vincent and Tony, defaults to Vincent", async ({ page }) =>
   expect(options).toContain("Tony");
 });
 
-test("switching players scopes History and Track to that player's games", async ({ page }) => {
-  await freshLoad(page);
+test("switching players scopes History to that player's games", async ({ page }) => {
+  await freshLacrosse(page);
   await goTo(page, "History");
   let body = await page.textContent("body");
   for (const name of SEEDED_GAME_NAMES) expect(body).toContain(name);
@@ -23,14 +23,14 @@ test("switching players scopes History and Track to that player's games", async 
 });
 
 test("switching players keeps the current tab instead of jumping to Track", async ({ page }) => {
-  await freshLoad(page);
+  await freshLacrosse(page);
   await goTo(page, "Stats");
   await switchPlayer(page, "Tony");
   await expect(page.locator(".tab.on")).toHaveText("Stats");
 });
 
 test("adding a player via the dropdown creates and switches to them", async ({ page }) => {
-  await freshLoad(page);
+  await freshLacrosse(page);
   const select = page.locator("select.player-select");
   await select.selectOption("__add__");
   const input = page.locator(".player-bar input.name-input");

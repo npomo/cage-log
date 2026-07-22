@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { freshLoad, startBlankGame } from "./helpers.js";
+import { freshLacrosse, startBlankGame } from "./helpers.js";
 
 test.beforeEach(async ({ page }) => {
-  await freshLoad(page);
+  await freshLacrosse(page);
   await startBlankGame(page);
 });
 

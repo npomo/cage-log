@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { freshLoad, switchPlayer, goTo } from "./helpers.js";
+import { freshLoad, freshLacrosse, switchPlayer, goTo } from "./helpers.js";
 
 test("deleting a player requires a two-step confirm", async ({ page }) => {
   await freshLoad(page);
@@ -12,7 +12,7 @@ test("deleting a player requires a two-step confirm", async ({ page }) => {
 });
 
 test("confirming delete removes the player and their games, switching to another player", async ({ page }) => {
-  await freshLoad(page);
+  await freshLacrosse(page);
   await page.click('button.player-edit-btn[title="Delete player"]');
   await page.click('button:has-text("Yes, delete")');
 

@@ -19,6 +19,12 @@ export default defineConfig([
     },
   },
   {
+    // Tracker modules intentionally export a plugin object alongside their
+    // components; they aren't fast-refresh route boundaries.
+    files: ['src/sports/**/*.jsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+  {
     files: ['tst/**/*.js', 'playwright.config.js'],
     languageOptions: {
       globals: globals.node,
