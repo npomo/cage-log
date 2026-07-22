@@ -189,5 +189,36 @@ h1, h2 { margin: 0; }
 .badge-goal { background: var(--goal-bg); color: #fff; }
 .modal-del { background: none; border: 1px solid var(--danger-border); color: var(--danger-text); font-size: 14px; font-weight: 700; width: 32px; height: 32px; border-radius: 7px; cursor: pointer; }
 
+/* ---- Attack tracker: half-field shot chart + counters ---- */
+.hfield { position: relative; background: linear-gradient(0deg, var(--field-grad-1), var(--field-grad-2)); border: 2px solid var(--accent-soft-border); border-radius: 14px; padding: 12px; }
+.cage-line { display: flex; justify-content: center; margin-bottom: 11px; }
+.cage-line span { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--field-text); border: 2px solid var(--field-text); border-bottom-width: 4px; border-radius: 3px 3px 0 0; padding: 3px 26px; opacity: 0.75; }
+.hshots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.szone { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: var(--fcell-overlay); border: 1px solid var(--accent-soft-border); border-radius: 9px; color: var(--field-text); font-size: 12px; font-weight: 600; padding: 14px 6px; min-height: 60px; cursor: pointer; transition: all .12s; }
+.szone-lbl { letter-spacing: 0.02em; }
+.szone-tally { font-size: 16px; font-weight: 800; color: var(--text); }
+.szone-tally i { color: var(--text-faint); font-style: normal; margin: 0 1px; }
+.szone.good { background: var(--ok-bg); border-color: var(--ok-border); }
+.szone.good .szone-tally { color: var(--ok-text); }
+.szone.bad { background: var(--hot-bg); border-color: var(--hot-border); }
+.szone.bad .szone-tally { color: var(--hot-text); }
+.szone.sel { border: 2px solid var(--accent); background: var(--sel-bg); color: var(--accent-text); }
+
+.shot-goal { flex: 1; background: var(--save-bg); color: #fff; border: 0; font-weight: 700; font-size: 15px; padding: 13px; border-radius: 11px; cursor: pointer; }
+.shot-save { flex: 1; background: #b5852a; color: #fff; border: 0; font-weight: 700; font-size: 15px; padding: 13px; border-radius: 11px; cursor: pointer; }
+.shot-miss { flex: 1; background: var(--border); color: var(--text-soft); border: 0; font-weight: 700; font-size: 15px; padding: 13px; border-radius: 11px; cursor: pointer; }
+
+.counters { display: flex; flex-direction: column; gap: 8px; }
+.counter-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px; padding: 9px 9px 9px 15px; }
+.counter-name { font-size: 14px; font-weight: 600; }
+.counter-ctl { display: flex; align-items: center; gap: 12px; }
+.counter-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 20px; font-weight: 700; cursor: pointer; line-height: 1; }
+.counter-btn:disabled { opacity: 0.35; cursor: default; }
+.counter-val { min-width: 20px; text-align: center; font-size: 19px; font-weight: 800; }
+
+.badge-att-goal { background: var(--save-bg); color: #fff; }
+.badge-att-save { background: #b5852a; color: #fff; }
+.badge-att-miss { background: var(--border); color: var(--text-soft); }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 `;

@@ -1,4 +1,5 @@
 import goalieTracker from "./lacrosse/goalie.jsx";
+import attackTracker from "./lacrosse/attack.jsx";
 
 // ---- Sport / position registry ----------------------------------------------
 // Each sport lists its positions. A position with `tracker` is playable; one
@@ -12,7 +13,7 @@ export const SPORTS = [
     emoji: "🥍",
     positions: [
       { id: "goalie", label: "Goalie", tracker: goalieTracker },
-      { id: "attack", label: "Attack" },
+      { id: "attack", label: "Attack", tracker: attackTracker },
       { id: "defender", label: "Defender / LSM" },
       { id: "fogo", label: "FOGO" },
     ],
