@@ -216,6 +216,8 @@ h1, h2 { margin: 0; }
 .counter-btn:disabled { opacity: 0.35; cursor: default; }
 .counter-val { min-width: 20px; text-align: center; font-size: 19px; font-weight: 800; }
 
+.pen-opt { flex: 1; background: var(--bg-2); border: 1px solid var(--border); color: var(--text); font-weight: 700; font-size: 15px; padding: 13px 6px; border-radius: 11px; cursor: pointer; }
+
 .badge-att-goal { background: var(--save-bg); color: #fff; }
 .badge-att-save { background: #b5852a; color: #fff; }
 .badge-att-miss { background: var(--border); color: var(--text-soft); }

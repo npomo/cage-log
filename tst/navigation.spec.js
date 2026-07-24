@@ -19,12 +19,12 @@ test("entering a sport shows its tabs; back returns to the grid", async ({ page 
   await expect(page.locator(".sport-grid")).toBeVisible();
 });
 
-test("track tab offers a position picker: goalie & attack ready, others coming soon", async ({ page }) => {
+test("track tab offers a position picker with FOGO still coming soon", async ({ page }) => {
   await freshLacrosse(page);
   await goTo(page, "Track");
   await expect(page.locator('.position-btn:has-text("Goalie")')).toBeEnabled();
   await expect(page.locator('.position-btn:has-text("Attack")')).toBeEnabled();
-  await expect(page.locator('.position-btn:has-text("Defender / LSM")')).toBeDisabled();
+  await expect(page.locator('.position-btn:has-text("Defender / LSM")')).toBeEnabled();
   await expect(page.locator('.position-btn:has-text("FOGO")')).toBeDisabled();
 });
 
