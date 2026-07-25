@@ -219,20 +219,13 @@ h1, h2 { margin: 0; }
 .pen-opt { flex: 1; background: var(--bg-2); border: 1px solid var(--border); color: var(--text); font-weight: 700; font-size: 15px; padding: 13px 6px; border-radius: 11px; cursor: pointer; }
 
 /* ---- Basketball half-court shot chart ---- */
-.court { position: relative; width: 100%; aspect-ratio: 500 / 470; background: linear-gradient(0deg, var(--field-grad-1), var(--field-grad-2)); border: 2px solid var(--accent-soft-border); border-radius: 14px; overflow: hidden; }
+.court { position: relative; width: 100%; aspect-ratio: 500 / 470; background: linear-gradient(0deg, var(--field-grad-1), var(--field-grad-2)); border: 2px solid var(--accent-soft-border); border-radius: 14px; overflow: hidden; cursor: crosshair; }
 .court-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.court-svg line, .court-svg path, .court-svg circle, .court-svg rect { fill: none; stroke: var(--field-text); stroke-width: 2; opacity: 0.55; }
+.court-svg line, .court-svg path, .court-svg rect, .court-svg circle.court-mark { fill: none; stroke: var(--field-text); stroke-width: 2; opacity: 0.55; }
 .court-svg rect.paint { fill: var(--fcell-overlay); }
-.zspot { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; width: 14%; aspect-ratio: 1; border-radius: 50%; background: rgba(140,140,140,0.16); border: 1px solid var(--border); color: var(--field-text); cursor: pointer; padding: 0; }
-.zspot .z-lbl { font-size: 8px; letter-spacing: 0.02em; opacity: 0.85; }
-.zspot .z-tally { font-size: 13px; font-weight: 800; color: var(--text); line-height: 1.1; }
-.zspot .z-tally i { font-style: normal; color: var(--text-faint); margin: 0 1px; }
-.zspot .z3 { position: absolute; top: 3px; right: 6px; font-size: 8px; font-weight: 800; color: var(--accent-text); }
-.zspot.good { background: var(--ok-bg); border-color: var(--ok-border); }
-.zspot.good .z-tally { color: var(--ok-text); }
-.zspot.bad { background: var(--hot-bg); border-color: var(--hot-border); }
-.zspot.bad .z-tally { color: var(--hot-text); }
-.zspot.sel { border: 2px solid var(--accent); background: var(--sel-bg); }
+.court-svg .dot-made { fill: #3ddc84; stroke: rgba(0,0,0,0.6); stroke-width: 1.5; }
+.court-svg .dot-miss { fill: #ff5a5f; stroke: rgba(0,0,0,0.6); stroke-width: 1.5; }
+.court-svg .dot-pending { fill: none; stroke: var(--accent); stroke-width: 3; }
 .made { flex: 1; background: var(--save-bg); color: #fff; border: 0; font-weight: 700; font-size: 15px; padding: 13px; border-radius: 11px; cursor: pointer; }
 .missed { flex: 1; background: var(--goal-bg); color: #fff; border: 0; font-weight: 700; font-size: 15px; padding: 13px; border-radius: 11px; cursor: pointer; }
 

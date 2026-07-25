@@ -4,27 +4,24 @@ import { Stat, CounterGroup } from "../../ui.jsx";
 import { eventLog, allEvents } from "../eventLog.js";
 
 // ---- Basketball player tracker ----------------------------------------------
-// Tap a spot on the half-court, then Made / Missed. Each spot knows whether
-// it's worth 2 or 3, so points, FG%, 3P% follow automatically. Assists,
-// rebounds, steals, blocks and free throws are +/- counters.
+// Tap anywhere on the half-court to drop a shot marker, then Made / Missed —
+// the dot turns green (made) or red (missed). Whether it's a 2 or a 3 is read
+// from the tap location vs the 3-point line, so points/FG%/3P% are automatic.
+// Assists, rebounds, steals, blocks and free throws are +/- counters.
 //
-// Events: { type:"shot", zone, pts:2|3, made:bool }
+// Events: { type:"shot", x, y, made }   // x,y are % of the court box
 //         { type:"assist"|"rebound"|"steal"|"block"|"ftMade"|"ftAtt" }
+//
+// The court chart is per game (visible on the Track page / when opened from
+// History). The career Stats view omits it — lifetime dots would be a mess.
 
-// Court zones: x/y are % of the court box (viewBox 500x470, basket at bottom).
-const ZONES = [
-  { id: "rim", x: 50, y: 83, pts: 2, label: "Rim" },
-  { id: "baseL", x: 19, y: 85, pts: 2, label: "Base L" },
-  { id: "baseR", x: 81, y: 85, pts: 2, label: "Base R" },
-  { id: "elbowL", x: 31, y: 61, pts: 2, label: "Elbow L" },
-  { id: "elbowR", x: 69, y: 61, pts: 2, label: "Elbow R" },
-  { id: "ft", x: 50, y: 59, pts: 2, label: "FT" },
-  { id: "cornerL", x: 9, y: 94, pts: 3, label: "Corner" },
-  { id: "cornerR", x: 91, y: 94, pts: 3, label: "Corner" },
-  { id: "wingL", x: 16, y: 45, pts: 3, label: "Wing" },
-  { id: "wingR", x: 84, y: 45, pts: 3, label: "Wing" },
-  { id: "top", x: 50, y: 29, pts: 3, label: "Top" },
-];
+// Court geometry (viewBox 500x470, basket at ~250,422). A shot is a three if
+// it's outside the corner lines (x<40 or x>460) or beyond the arc (r>224).
+function isThree(xPct, yPct) {
+  const x = (xPct / 100) * 500;
+  const y = (yPct / 100) * 470;
+  return x < 40 || x > 460 || Math.hypot(x - 250, y - 422) > 224;
+}
 
 const COUNTERS = [
   { type: "assist", label: "Assists" },
@@ -34,7 +31,9 @@ const COUNTERS = [
 ];
 
 function ballStats(events) {
-  const shots = events.filter((e) => e.type === "shot");
+  const shots = events
+    .filter((e) => e.type === "shot")
+    .map((sh) => ({ ...sh, pts: isThree(sh.x, sh.y) ? 3 : 2 }));
   const made2 = shots.filter((s) => s.pts === 2 && s.made).length;
   const att2 = shots.filter((s) => s.pts === 2).length;
   const made3 = shots.filter((s) => s.pts === 3 && s.made).length;
@@ -60,41 +59,33 @@ function summarize(game) {
   };
 }
 
-function CourtChart({ shots, pending, onTap }) {
-  const tally = (zoneId) => {
-    const cell = shots.filter((s) => s.zone === zoneId);
-    return { made: cell.filter((s) => s.made).length, att: cell.length };
-  };
+function CourtChart({ shots, pending, onPlace }) {
+  const interactive = !!onPlace;
+  const handleClick = interactive
+    ? (e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        const x = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
+        const y = Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100));
+        onPlace(x, y);
+      }
+    : undefined;
   return (
-    <div className="court">
+    <div className="court" style={interactive ? undefined : { cursor: "default" }} onClick={handleClick}>
       <svg className="court-svg" viewBox="0 0 500 470" preserveAspectRatio="xMidYMid meet">
         <rect x="2" y="2" width="496" height="466" />
         <rect className="paint" x="170" y="280" width="160" height="188" />
-        <circle cx="250" cy="280" r="60" />
+        <circle className="court-mark" cx="250" cy="280" r="60" />
         <line x1="215" y1="430" x2="285" y2="430" />
-        <circle cx="250" cy="422" r="9" />
+        <circle className="court-mark" cx="250" cy="422" r="9" />
         <line x1="40" y1="468" x2="40" y2="340" />
         <line x1="460" y1="468" x2="460" y2="340" />
         <path d="M40,340 A224,224 0 0 1 460,340" />
         <path d="M180,2 A70,70 0 0 1 320,2" />
+        {shots.map((s, i) => (
+          <circle key={i} className={s.made ? "dot-made" : "dot-miss"} cx={(s.x / 100) * 500} cy={(s.y / 100) * 470} r="8" />
+        ))}
+        {pending && <circle className="dot-pending" cx={(pending.x / 100) * 500} cy={(pending.y / 100) * 470} r="11" />}
       </svg>
-      {ZONES.map((z) => {
-        const t = tally(z.id);
-        const madeHeavy = t.att > 0 && t.made * 2 >= t.att;
-        const cls = t.att ? (madeHeavy ? " good" : " bad") : "";
-        return (
-          <button
-            key={z.id}
-            className={`zspot${pending === z.id ? " sel" : ""}${cls}`}
-            style={{ left: `${z.x}%`, top: `${z.y}%` }}
-            onClick={() => onTap(z.id)}
-          >
-            {z.pts === 3 && <span className="z3">3</span>}
-            <span className="z-lbl">{z.label}</span>
-            {t.att > 0 && <span className="z-tally">{t.made}<i>/</i>{t.att}</span>}
-          </button>
-        );
-      })}
     </div>
   );
 }
@@ -105,8 +96,7 @@ function PlayerTrack({ game, update }) {
   const s = ballStats(log.events);
 
   const logShot = (made) => {
-    const zone = ZONES.find((z) => z.id === pending);
-    log.append({ type: "shot", zone: zone.id, pts: zone.pts, made });
+    log.append({ type: "shot", x: pending.x, y: pending.y, made });
     setPending(null);
   };
 
@@ -120,17 +110,17 @@ function PlayerTrack({ game, update }) {
       </div>
 
       <section className="panel">
-        <h2 className="panel-title">Shots <span className="hint">tap a spot, then made or missed</span></h2>
-        <CourtChart shots={s.shots} pending={pending} onTap={(z) => setPending(pending === z ? null : z)} />
+        <h2 className="panel-title">Shots <span className="hint">tap the court, then made or missed</span></h2>
+        <CourtChart shots={s.shots} pending={pending} onPlace={(x, y) => setPending({ x, y })} />
         {pending && (
           <div className="choice">
-            <span className="choice-q">{ZONES.find((z) => z.id === pending).label} ({ZONES.find((z) => z.id === pending).pts}pt) →</span>
+            <span className="choice-q">{isThree(pending.x, pending.y) ? "3-pointer" : "2-pointer"} →</span>
             <button className="made" onClick={() => logShot(true)}>Made</button>
             <button className="missed" onClick={() => logShot(false)}>Missed</button>
             <button className="cancel" onClick={() => setPending(null)}>×</button>
           </div>
         )}
-        <p className="legend">{s.fgm}/{s.fga} FG · {s.made3}/{s.att3} from three. Green = mostly made.</p>
+        <p className="legend">{s.fgm}/{s.fga} FG · {s.made3}/{s.att3} from three. Green = made, red = missed.</p>
       </section>
 
       <CounterGroup title="Playmaking" log={log} items={COUNTERS} />
@@ -148,6 +138,7 @@ function PlayerTrack({ game, update }) {
   );
 }
 
+// Career view: all the stats, but no court (lifetime dots would be noise).
 function PlayerStats({ games }) {
   const s = ballStats(allEvents(games));
   return (
@@ -168,12 +159,6 @@ function PlayerStats({ games }) {
         <Stat label="Steals" value={s.steals} />
         <Stat label="Blocks" value={s.blocks} />
       </div>
-
-      <section className="panel">
-        <h2 className="panel-title">Shot chart</h2>
-        <CourtChart shots={s.shots} pending={null} onTap={() => {}} />
-        <p className="legend">Each spot shows <b>made / attempts</b>. Green = mostly made, red = mostly missed.</p>
-      </section>
     </>
   );
 }
