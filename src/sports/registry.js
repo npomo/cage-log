@@ -1,6 +1,12 @@
 import goalieTracker from "./lacrosse/goalie.jsx";
 import attackTracker from "./lacrosse/attack.jsx";
 import defenderTracker from "./lacrosse/defender.jsx";
+import fogoTracker from "./lacrosse/fogo.jsx";
+import basketballTracker from "./basketball/player.jsx";
+import pitcherTracker from "./baseball/pitcher.jsx";
+import hitterTracker from "./baseball/hitter.jsx";
+import hockeyGoalieTracker from "./hockey/goalie.jsx";
+import skaterTracker from "./hockey/skater.jsx";
 
 // ---- Sport / position registry ----------------------------------------------
 // Each sport lists its positions. A position with `tracker` is playable; one
@@ -16,22 +22,22 @@ export const SPORTS = [
       { id: "goalie", label: "Goalie", tracker: goalieTracker },
       { id: "attack", label: "Attack", tracker: attackTracker },
       { id: "defender", label: "Defender / LSM", tracker: defenderTracker },
-      { id: "fogo", label: "FOGO" },
+      { id: "fogo", label: "FOGO", tracker: fogoTracker },
     ],
   },
   {
     id: "basketball",
     label: "Basketball",
     emoji: "🏀",
-    positions: [{ id: "player", label: "Player" }],
+    positions: [{ id: "player", label: "Player", tracker: basketballTracker }],
   },
   {
     id: "baseball",
     label: "Baseball",
     emoji: "⚾",
     positions: [
-      { id: "pitcher", label: "Pitcher" },
-      { id: "hitter", label: "Hitter" },
+      { id: "pitcher", label: "Pitcher", tracker: pitcherTracker },
+      { id: "hitter", label: "Hitter", tracker: hitterTracker },
     ],
   },
   {
@@ -50,8 +56,8 @@ export const SPORTS = [
     label: "Hockey",
     emoji: "🏒",
     positions: [
-      { id: "goalie", label: "Goalie" },
-      { id: "skater", label: "Skater" },
+      { id: "goalie", label: "Goalie", tracker: hockeyGoalieTracker },
+      { id: "skater", label: "Skater", tracker: skaterTracker },
     ],
   },
 ];

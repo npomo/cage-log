@@ -1,12 +1,14 @@
 import { test, expect } from "@playwright/test";
 import { freshLoad, freshLacrosse, goTo } from "./helpers.js";
 
-test("sport grid shows all five sports, only lacrosse playable", async ({ page }) => {
+test("sport grid shows all five sports; only football is coming soon", async ({ page }) => {
   await freshLoad(page);
   await expect(page.locator(".sport-btn")).toHaveCount(5);
-  await expect(page.locator('.sport-btn:has-text("Lacrosse")')).toBeEnabled();
-  await expect(page.locator('.sport-btn:has-text("Basketball")')).toBeDisabled();
-  await expect(page.locator('.sport-btn:has-text("Basketball") .soon-tag')).toBeVisible();
+  for (const s of ["Lacrosse", "Basketball", "Baseball", "Hockey"]) {
+    await expect(page.locator(`.sport-btn:has-text("${s}")`)).toBeEnabled();
+  }
+  await expect(page.locator('.sport-btn:has-text("Football")')).toBeDisabled();
+  await expect(page.locator('.sport-btn:has-text("Football") .soon-tag')).toBeVisible();
 });
 
 test("entering a sport shows its tabs; back returns to the grid", async ({ page }) => {
@@ -19,13 +21,12 @@ test("entering a sport shows its tabs; back returns to the grid", async ({ page 
   await expect(page.locator(".sport-grid")).toBeVisible();
 });
 
-test("track tab offers a position picker with FOGO still coming soon", async ({ page }) => {
+test("all four lacrosse positions are now playable", async ({ page }) => {
   await freshLacrosse(page);
   await goTo(page, "Track");
-  await expect(page.locator('.position-btn:has-text("Goalie")')).toBeEnabled();
-  await expect(page.locator('.position-btn:has-text("Attack")')).toBeEnabled();
-  await expect(page.locator('.position-btn:has-text("Defender / LSM")')).toBeEnabled();
-  await expect(page.locator('.position-btn:has-text("FOGO")')).toBeDisabled();
+  for (const p of ["Goalie", "Attack", "Defender / LSM", "FOGO"]) {
+    await expect(page.locator(`.position-btn:has-text("${p}")`)).toBeEnabled();
+  }
 });
 
 test("legacy seeded games are migrated and shown as goalie games", async ({ page }) => {
