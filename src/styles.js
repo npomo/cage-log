@@ -215,7 +215,9 @@ h1, h2 { margin: 0; }
 .counter-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 20px; font-weight: 700; cursor: pointer; line-height: 1; }
 .counter-btn:disabled { opacity: 0.35; cursor: default; }
 .counter-val { min-width: 20px; text-align: center; font-size: 19px; font-weight: 800; }
+.counter-row.locked { opacity: 0.4; }
 .field-num { background: none; border: 0; border-bottom: 1px dashed var(--border-strong); color: var(--text); cursor: pointer; padding: 0 2px 1px; min-width: 40px; }
+.field-num:disabled { cursor: default; border-bottom-color: transparent; }
 .field-input { width: 64px; text-align: center; font-size: 18px; font-weight: 800; font-family: inherit; background: var(--bg-2); border: 1px solid var(--accent); border-radius: 8px; color: var(--text); padding: 5px 4px; outline: none; -moz-appearance: textfield; }
 .field-input::-webkit-outer-spin-button, .field-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 

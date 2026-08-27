@@ -8,6 +8,18 @@ import { fieldLog, sumFields } from "../fields.js";
 //
 // data = { targets, rec, recYds, yac, rushAtt, rushYds, td, fumbles }
 
+// Logical caps (parents first): can't catch more than targeted, YAC can't
+// exceed receiving yards, TDs/fumbles need a touch (catch or rush attempt),
+// and yardage is gated by having the relevant attempt.
+const OFF_CAPS = {
+  rec: (g) => g("targets"),
+  recYds: (g) => (g("rec") > 0 ? Infinity : 0),
+  yac: (g) => g("recYds"),
+  rushYds: (g) => (g("rushAtt") > 0 ? Infinity : 0),
+  td: (g) => g("rec") + g("rushAtt"),
+  fumbles: (g) => g("rec") + g("rushAtt"),
+};
+
 function offStats(g) {
   const rec = g("rec");
   const targets = g("targets");
@@ -45,7 +57,7 @@ function scoreboard(s) {
 }
 
 function OffenseTrack({ game, update }) {
-  const log = fieldLog(game, update);
+  const log = fieldLog(game, update, OFF_CAPS);
   const s = offStats(log.get);
   return (
     <>

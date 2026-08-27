@@ -13,6 +13,20 @@ import { fieldLog, sumFields } from "../fields.js";
 
 const oneDp = (x) => (x == null ? "—" : x.toFixed(1));
 
+// Logical caps (parents first). A child locks when its cap is 0 — e.g. you
+// can't log completions without pass attempts, or passing TDs beyond
+// completions. Yardage is gated by having attempts but otherwise uncapped.
+const QB_CAPS = {
+  passYds: (g) => (g("passAtt") > 0 ? Infinity : 0),
+  comp: (g) => g("passAtt"),
+  int: (g) => g("passAtt"),
+  passTD: (g) => g("comp"),
+  rushYds: (g) => (g("rushAtt") > 0 ? Infinity : 0),
+  thirdConv: (g) => g("thirdAtt"),
+  rzTD: (g) => g("rzAtt"),
+  fumbles: (g) => (g("passAtt") + g("rushAtt") > 0 ? Infinity : 0),
+};
+
 function qbStats(g) {
   const passAtt = g("passAtt");
   const comp = g("comp");
@@ -56,7 +70,7 @@ function scoreboard(s) {
 }
 
 function QuarterbackTrack({ game, update }) {
-  const log = fieldLog(game, update);
+  const log = fieldLog(game, update, QB_CAPS);
   const s = qbStats(log.get);
   return (
     <>

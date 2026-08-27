@@ -49,21 +49,23 @@ export function CounterGroup({ title, items, log }) {
 // A field row: label + [−] [tappable number] [+]. Tapping the number lets you
 // type a value directly (numeric keyboard on mobile) — handy for yardage that
 // jumps in big increments; the +/- still nudge by one. Used by field-style
-// trackers (football) via a fieldLog().
-export function FieldRow({ label, value, onAdjust, onSet }) {
+// trackers (football) via a fieldLog(). `max` caps the value: at the cap the +
+// is disabled, and when max<=0 the whole row locks (e.g. no pass attempts yet).
+export function FieldRow({ label, value, onAdjust, onSet, max = Infinity }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
+  const locked = max <= 0;
   const commit = () => {
     const n = parseInt(draft, 10);
     if (!Number.isNaN(n)) onSet(n);
     setEditing(false);
   };
   return (
-    <div className="counter-row">
+    <div className={`counter-row${locked ? " locked" : ""}`}>
       <span className="counter-name">{label}</span>
       <div className="counter-ctl">
         <button className="counter-btn" onClick={() => onAdjust(-1)} disabled={value === 0}>−</button>
-        {editing ? (
+        {editing && !locked ? (
           <input
             className="field-input"
             type="number"
@@ -76,18 +78,22 @@ export function FieldRow({ label, value, onAdjust, onSet }) {
             onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") setEditing(false); }}
           />
         ) : (
-          <button className="counter-val field-num" onClick={() => { setDraft(String(value)); setEditing(true); }}>
+          <button
+            className="counter-val field-num"
+            disabled={locked}
+            onClick={() => { setDraft(String(value)); setEditing(true); }}
+          >
             {value}
           </button>
         )}
-        <button className="counter-btn" onClick={() => onAdjust(1)}>+</button>
+        <button className="counter-btn" onClick={() => onAdjust(1)} disabled={value >= max}>+</button>
       </div>
     </div>
   );
 }
 
 // A titled panel of field rows. `items` = [{ key, label }]; `log` is a
-// fieldLog() result.
+// fieldLog() result. Caps (and thus locking) come from log.capOf(key).
 export function FieldGroup({ title, items, log }) {
   return (
     <section className="panel">
@@ -98,6 +104,7 @@ export function FieldGroup({ title, items, log }) {
             key={key}
             label={label}
             value={log.get(key)}
+            max={log.capOf(key)}
             onAdjust={(d) => log.adjust(key, d)}
             onSet={(v) => log.set(key, v)}
           />
