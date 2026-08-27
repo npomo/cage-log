@@ -1,14 +1,22 @@
 import { test, expect } from "@playwright/test";
 import { freshLoad, freshLacrosse, goTo } from "./helpers.js";
 
-test("sport grid shows all five sports; only football is coming soon", async ({ page }) => {
+test("sport grid shows all five sports, all now playable", async ({ page }) => {
   await freshLoad(page);
   await expect(page.locator(".sport-btn")).toHaveCount(5);
-  for (const s of ["Lacrosse", "Basketball", "Baseball", "Hockey"]) {
+  for (const s of ["Lacrosse", "Basketball", "Baseball", "Hockey", "Football"]) {
     await expect(page.locator(`.sport-btn:has-text("${s}")`)).toBeEnabled();
   }
-  await expect(page.locator('.sport-btn:has-text("Football")')).toBeDisabled();
-  await expect(page.locator('.sport-btn:has-text("Football") .soon-tag')).toBeVisible();
+  await expect(page.locator(".soon-tag")).toHaveCount(0);
+});
+
+test("football offers all three positions", async ({ page }) => {
+  await freshLoad(page);
+  await page.click('.sport-btn:has-text("Football")');
+  await goTo(page, "Track");
+  for (const p of ["Quarterback", "Offensive Player", "Defensive Player"]) {
+    await expect(page.locator(`.position-btn:has-text("${p}")`)).toBeEnabled();
+  }
 });
 
 test("entering a sport shows its tabs; back returns to the grid", async ({ page }) => {

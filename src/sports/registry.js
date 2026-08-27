@@ -7,6 +7,9 @@ import pitcherTracker from "./baseball/pitcher.jsx";
 import hitterTracker from "./baseball/hitter.jsx";
 import hockeyGoalieTracker from "./hockey/goalie.jsx";
 import skaterTracker from "./hockey/skater.jsx";
+import quarterbackTracker from "./football/quarterback.jsx";
+import defenseTracker from "./football/defense.jsx";
+import offenseTracker from "./football/offense.jsx";
 
 // ---- Sport / position registry ----------------------------------------------
 // Each sport lists its positions. A position with `tracker` is playable; one
@@ -45,10 +48,9 @@ export const SPORTS = [
     label: "Football",
     emoji: "🏈",
     positions: [
-      { id: "qb", label: "Quarterback" },
-      { id: "wr", label: "Wide Receiver" },
-      { id: "dl", label: "Defensive Line" },
-      { id: "db", label: "Safety / Corner" },
+      { id: "quarterback", label: "Quarterback", tracker: quarterbackTracker },
+      { id: "offense", label: "Offensive Player", tracker: offenseTracker },
+      { id: "defense", label: "Defensive Player", tracker: defenseTracker },
     ],
   },
   {
