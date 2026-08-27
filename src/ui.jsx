@@ -14,13 +14,13 @@ export function Stat({ label, value, big }) {
 // mutate it. `max` caps it: + disables at the cap, and when max<=0 the row
 // locks (e.g. a stat whose parent is still 0). Used by the counter-style
 // trackers (fogo, baseball, hockey…).
-export function CounterRow({ label, value, onAdd, onRemove, max = Infinity }) {
+export function CounterRow({ label, value, onAdd, onRemove, min = 0, max = Infinity }) {
   const locked = max <= 0;
   return (
     <div className={`counter-row${locked ? " locked" : ""}`}>
       <span className="counter-name">{label}</span>
       <div className="counter-ctl">
-        <button className="counter-btn" onClick={onRemove} disabled={value === 0}>−</button>
+        <button className="counter-btn" onClick={onRemove} disabled={value <= min}>−</button>
         <span className="counter-val">{value}</span>
         <button className="counter-btn" onClick={onAdd} disabled={value >= max}>+</button>
       </div>
