@@ -11,15 +11,18 @@ export function Stat({ label, value, big }) {
 }
 
 // A single +/- counter row. `value` is the current count; onAdd/onRemove
-// mutate it. Used by the counter-style trackers (fogo, baseball, hockey…).
-export function CounterRow({ label, value, onAdd, onRemove }) {
+// mutate it. `max` caps it: + disables at the cap, and when max<=0 the row
+// locks (e.g. a stat whose parent is still 0). Used by the counter-style
+// trackers (fogo, baseball, hockey…).
+export function CounterRow({ label, value, onAdd, onRemove, max = Infinity }) {
+  const locked = max <= 0;
   return (
-    <div className="counter-row">
+    <div className={`counter-row${locked ? " locked" : ""}`}>
       <span className="counter-name">{label}</span>
       <div className="counter-ctl">
         <button className="counter-btn" onClick={onRemove} disabled={value === 0}>−</button>
         <span className="counter-val">{value}</span>
-        <button className="counter-btn" onClick={onAdd}>+</button>
+        <button className="counter-btn" onClick={onAdd} disabled={value >= max}>+</button>
       </div>
     </div>
   );
@@ -27,6 +30,7 @@ export function CounterRow({ label, value, onAdd, onRemove }) {
 
 // A titled panel of counter rows. `items` = [{ type, label }]; `log` is an
 // eventLog() result; each row increments/decrements events of its `type`.
+// Caps (and thus locking) come from log.capOf(type).
 export function CounterGroup({ title, items, log }) {
   return (
     <section className="panel">
@@ -37,6 +41,7 @@ export function CounterGroup({ title, items, log }) {
             key={type}
             label={label}
             value={log.count(type)}
+            max={log.capOf(type)}
             onAdd={() => log.append({ type })}
             onRemove={() => log.removeLast(type)}
           />

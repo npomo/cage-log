@@ -13,6 +13,19 @@ async function bump(page, label, times = 1) {
   for (let i = 0; i < times; i++) await row.locator('button:has-text("+")').click();
 }
 
+test("goals allowed are locked until a shot is allowed, then capped by it", async ({ page }) => {
+  await freshLacrosse(page);
+  await startDefender(page);
+
+  const goals = page.locator(".counter-row", { hasText: "Goals allowed" });
+  await expect(goals).toHaveClass(/locked/);
+
+  await bump(page, "Shots allowed", 1);
+  await expect(goals).not.toHaveClass(/locked/);
+  await goals.locator('button:has-text("+")').click(); // 1 goal = 1 shot → at cap
+  await expect(goals.locator('button:has-text("+")')).toBeDisabled();
+});
+
 test("caused turnovers and ground balls tally on the scoreboard", async ({ page }) => {
   await freshLacrosse(page);
   await startDefender(page);

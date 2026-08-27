@@ -49,12 +49,24 @@ test("free throws add a point and compute FT%", async ({ page }) => {
   await startBasketball(page);
   const made = page.locator(".counter-row", { hasText: "Free throws made" });
   const att = page.locator(".counter-row", { hasText: "Free throws attempted" });
+
+  // made is locked until there's an attempt
+  await expect(made).toHaveClass(/locked/);
+  await att.locator('button:has-text("+")').click();
+  await att.locator('button:has-text("+")').click();
   await made.locator('button:has-text("+")').click();
-  await att.locator('button:has-text("+")').click();
-  await att.locator('button:has-text("+")').click();
 
   await expect(page.locator(".stat.big")).toContainText("1"); // 1 point from FT
   await expect(page.locator(".panel-title", { hasText: "Free throws" })).toContainText("1/2");
+});
+
+test("made free throws can't exceed attempts", async ({ page }) => {
+  await startBasketball(page);
+  const att = page.locator(".counter-row", { hasText: "Free throws attempted" });
+  const made = page.locator(".counter-row", { hasText: "Free throws made" });
+  await att.locator('button:has-text("+")').click(); // 1 attempt
+  await made.locator('button:has-text("+")').click(); // 1 make → at cap
+  await expect(made.locator('button:has-text("+")')).toBeDisabled();
 });
 
 test("career Stats view keeps the stats but drops the court chart", async ({ page }) => {

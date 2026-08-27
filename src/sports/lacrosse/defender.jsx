@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { pct } from "../../util.js";
-import { Stat } from "../../ui.jsx";
+import { Stat, CounterRow } from "../../ui.jsx";
+import { eventLog } from "../eventLog.js";
 
 // ---- Defender / LSM tracker -------------------------------------------------
 // Counter-only: where these plays happen matters less than that they happened,
@@ -42,6 +43,10 @@ const GROUPS = [
 
 const PENALTY_OPTIONS = [30, 60, 180];
 
+// A goal allowed is a shot allowed, so goals-allowed can't exceed shots-allowed
+// (and locks until there's a shot allowed).
+const DEF_CAPS = { goalAllowed: (c) => c("shotAllowed") };
+
 const fmtTime = (secs) => `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
 
 function defenderStats(data) {
@@ -75,35 +80,11 @@ function summarize(game) {
   };
 }
 
-function CounterRow({ label, value, onAdd, onRemove }) {
-  return (
-    <div className="counter-row">
-      <span className="counter-name">{label}</span>
-      <div className="counter-ctl">
-        <button className="counter-btn" onClick={onRemove} disabled={value === 0}>−</button>
-        <span className="counter-val">{value}</span>
-        <button className="counter-btn" onClick={onAdd}>+</button>
-      </div>
-    </div>
-  );
-}
-
 function DefenderTrack({ game, update }) {
   const [pendingPenalty, setPendingPenalty] = useState(false);
-  const data = game.data;
-  const s = defenderStats(data);
-  const events = data.events || [];
-
-  const append = (ev) => update((d) => ({ ...d, events: [...(d.events || []), { ...ev, t: new Date().toISOString() }] }));
-  const removeLast = (type) => update((d) => {
-    const evs = [...(d.events || [])];
-    for (let i = evs.length - 1; i >= 0; i--) { if (evs[i].type === type) { evs.splice(i, 1); break; } }
-    return { ...d, events: evs };
-  });
-  const undoLast = () => update((d) => ({ ...d, events: (d.events || []).slice(0, -1) }));
-  const logPenalty = (seconds) => { append({ type: "penalty", seconds }); setPendingPenalty(false); };
-
-  const count = (type) => events.filter((e) => e.type === type).length;
+  const log = eventLog(game, update, DEF_CAPS);
+  const s = defenderStats(game.data);
+  const logPenalty = (seconds) => { log.append({ type: "penalty", seconds }); setPendingPenalty(false); };
 
   return (
     <>
@@ -122,9 +103,10 @@ function DefenderTrack({ game, update }) {
               <CounterRow
                 key={type}
                 label={label}
-                value={count(type)}
-                onAdd={() => append({ type })}
-                onRemove={() => removeLast(type)}
+                value={log.count(type)}
+                max={log.capOf(type)}
+                onAdd={() => log.append({ type })}
+                onRemove={() => log.removeLast(type)}
               />
             ))}
           </div>
@@ -140,7 +122,7 @@ function DefenderTrack({ game, update }) {
             label="Penalties"
             value={s.penaltyCount}
             onAdd={() => setPendingPenalty(true)}
-            onRemove={() => removeLast("penalty")}
+            onRemove={() => log.removeLast("penalty")}
           />
         </div>
         {pendingPenalty && (
@@ -155,8 +137,8 @@ function DefenderTrack({ game, update }) {
       </section>
 
       <div className="footer-actions">
-        <button className="ghost" onClick={undoLast} disabled={!events.length}>↶ Undo last</button>
-        <span className="count">{events.length} plays logged</span>
+        <button className="ghost" onClick={log.undoLast} disabled={!log.events.length}>↶ Undo last</button>
+        <span className="count">{log.events.length} plays logged</span>
       </div>
     </>
   );

@@ -30,6 +30,11 @@ const COUNTERS = [
   { type: "block", label: "Blocks" },
 ];
 
+// A made free throw must have been attempted; lock made until there's an
+// attempt and cap it there. (Court shots are already made-or-missed, so they
+// need no cap.)
+const BB_CAPS = { ftMade: (c) => c("ftAtt") };
+
 function ballStats(events) {
   const shots = events
     .filter((e) => e.type === "shot")
@@ -92,7 +97,7 @@ function CourtChart({ shots, pending, onPlace }) {
 
 function PlayerTrack({ game, update }) {
   const [pending, setPending] = useState(null);
-  const log = eventLog(game, update);
+  const log = eventLog(game, update, BB_CAPS);
   const s = ballStats(log.events);
 
   const logShot = (made) => {

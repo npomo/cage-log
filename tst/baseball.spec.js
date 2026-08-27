@@ -14,6 +14,43 @@ async function bump(page, label, times = 1) {
   for (let i = 0; i < times; i++) await row.locator('button:has-text("+")').click();
 }
 
+// Click + up to `times`, stopping early if the button locks at its cap.
+async function bumpMax(page, label, times) {
+  const btn = page.locator(".counter-row", { hasText: label }).locator('button:has-text("+")');
+  for (let i = 0; i < times; i++) {
+    if (await btn.isDisabled()) break;
+    await btn.click();
+  }
+}
+
+test("hitter: hit types are locked until there's an at-bat", async ({ page }) => {
+  await startBaseball(page, "Hitter");
+  const single = page.locator(".counter-row", { hasText: "Singles" });
+  await expect(single).toHaveClass(/locked/);
+
+  await bump(page, "At-bats", 1);
+  await expect(single).not.toHaveClass(/locked/);
+});
+
+test("hitter: hits + strikeouts can't exceed at-bats", async ({ page }) => {
+  await startBaseball(page, "Hitter");
+  await bump(page, "At-bats", 3);
+  await bump(page, "Singles", 2);
+  await bumpMax(page, "Home runs", 5); // only 1 at-bat left → caps at 1
+
+  await expect(page.locator(".counter-row", { hasText: "Home runs" }).locator(".counter-val")).toHaveText("1");
+  // every at-bat accounted for → all outcome + buttons disabled
+  await expect(page.locator(".counter-row", { hasText: "Singles" }).locator('button:has-text("+")')).toBeDisabled();
+});
+
+test("hitter: walks are not gated by at-bats", async ({ page }) => {
+  await startBaseball(page, "Hitter");
+  const walks = page.locator(".counter-row", { hasText: "Walks" });
+  await expect(walks).not.toHaveClass(/locked/);
+  await walks.locator('button:has-text("+")').click();
+  await expect(walks.locator(".counter-val")).toHaveText("1");
+});
+
 test("pitcher: ERA and IP compute from earned runs and outs", async ({ page }) => {
   await startBaseball(page, "Pitcher");
 

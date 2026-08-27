@@ -19,6 +19,15 @@ const COUNTERS = [
   { type: "steal", label: "Steals" },
 ];
 
+// Every hit and strikeout consumes an at-bat, so their combined total can't
+// exceed at-bats (walks and steals don't count as at-bats). Each outcome's cap
+// is the at-bats left after the other outcomes — so they all lock with no
+// at-bats, and the + stops once every at-bat is accounted for.
+const OUTCOMES = ["single", "double", "triple", "homerun", "strikeout"];
+const HIT_CAPS = Object.fromEntries(
+  OUTCOMES.map((t) => [t, (c) => c("atbat") - OUTCOMES.reduce((n, o) => n + (o === t ? 0 : c(o)), 0)]),
+);
+
 // Baseball rate format: 3 decimals, drop the leading zero when below 1 (.325).
 const rate = (x) => {
   if (x == null) return "—";
@@ -70,7 +79,7 @@ function scoreboard(s) {
 }
 
 function HitterTrack({ game, update }) {
-  const log = eventLog(game, update);
+  const log = eventLog(game, update, HIT_CAPS);
   const s = hitterStats(log.events);
   return (
     <>
